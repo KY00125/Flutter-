@@ -1,0 +1,53 @@
+import flet
+from flet import AppBar, ElevatedButton, Page, Text, View, colors
+
+
+def main(page: Page):
+    page.title = "sample"   #ウインドウ上のタイトル
+
+    #カラー設定
+    main_color = "#78BBE6"
+    sub_color ="#D5EEFF"
+    point_color = "#F99F48"
+    back_color = "#1B435D"
+
+    #コンテンツタイトル
+    contents1 = ("/apple","/banana") #1層目のタイトル
+    contents2 = (("/jum","/pai"),("/cake","/chocolate"))#2層目タイトル※1層目タイトルの数必要
+
+    #メインメニュー
+    zero_laycer = [AppBar(title=Text("メインページ"),bgcolor=sub_color)]#タイトル下のバー
+    for con in contents1:   #1層目への遷移ボタン（contents1に追加すればいくつでも可能）
+        route_name = con
+        zero_laycer.append(ElevatedButton(con,on_click=lambda _: page.go(route_name),bgcolor = main_color))
+
+    def route_change(e):    #ページ内容の反映
+        page.views.clear()  #初期化
+        page.views.append(View("/",zero_laycer))    #メインページの内容
+        
+        if page.route != "/":   #1層目の内容
+            con2 = contents1.index(route_name)
+            for cons2 in contents2[con2]:
+                route_name2 = cons2
+            page.views.append(
+                View(
+                    route_name,
+                    [
+                        AppBar(title=Text(route_name),bgcolor=sub_color),
+                        ElevatedButton("メインページへ戻る" , on_click=lambda _: page.go("/"),
+                                       bgcolor = point_color),
+                    ]
+                )
+            )
+        page.update()
+
+    def view_pop(e):    #表示するページの指定
+        top_view = page.views[-2]   #viewsの奇数番目にroute名、偶数番目にページの内容が入っています。
+                                    #なので後ろから2番目を指定することで指定している一番深い層のページが反映されます。
+        page.go(top_view.route)
+
+    page.on_route_change = route_change#ページの内容作成のキュー
+    page.on_view_pop = view_pop#表示ページ指定のキュー
+
+    page.go(page.route)
+flet.app(main)
